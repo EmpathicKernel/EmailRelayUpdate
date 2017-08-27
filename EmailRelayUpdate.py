@@ -16,7 +16,7 @@ domain = "'remote.imaqeo.com'"
 #        print(rdata.target)
 
 def IPGrab(domain):
-    cmd = "dig +short domain | sed -n 2p"
+    cmd = "dig +short %d | sed -n 2p" % domain
     proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
     out,err=proc.communicate()
     print(out)
