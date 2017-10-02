@@ -1,46 +1,37 @@
 #This script will find the new IPs of domains to update the PostFix relay setting with
 import socket
-import dns.resolver
+#import dns.resolver
 import subprocess
 import shlex
 import re
+import time
 
-#Dyn Domain -- will change this to find the domain via some method that doesn't get over wrote via Git
-domain = "'remote.imaqeo.com'"
+#Dyn Domain -- will change this to find the domain via some method that doesn't get overwrote via Git
+domain = "'remote.imaqeo.c'"
 path = "/etc/postfix/main.cf"
 
 
-#Need to see if we can get this way of doing it to work. 
 
-def IPGrab2(domain):
-    resolver = dns.resolver.Resolver()
-    resolver.nameservers = ['8.8.8.8']
-    resolver.port = 53
-    for i in resolver.query(domain, 'A').response.answer:
-        for j in i.items:
-            print (j.to_text())
-    
-#The hard way
-def IPGrab(dom):
-    cmd = "dig +short %s" % dom
-    proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
+#Bash command function
+def excomm(com):
+    proc=subprocess.Popen(shlex.split(com),stdout=subprocess.PIPE)
     out,err=proc.communicate()
-    decode = out.decode("utf-8")
-    #print(decode)
-    #iplist = [s.strip() for s in out.splitlines()]
-    #c = 0
+    output=out.decode("utf-8")
+    return output
+    #We need to do something with any errors
+
+#Grab the IP from a dig
+def IPGrab(dom):
+    decode = excomm("dig +short %s" % dom)
+    ErrorHandler("Dig result of %s" % dom + " is: %s" % decode)
     ips = re.findall( '\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b', decode)
     return ips
-    #for i in iplist:
-    #    cleanlist[c] = pattern.search(i)         
-    #    print(cleanlist[c])
-    #    c = c+1
 
 def FileEditor():
     ipstring = ""
     for IP in IPGrab(domain):
         ipstring += IP + "/32,"
-    print(ipstring)
+    ErrorHandler("New IP string is %s" % ipstring)
     #Let's create the temp file
     temp = open("/tmp/emailrelay.tmp", "a")
     #Let's open the current file
@@ -48,26 +39,32 @@ def FileEditor():
         #Now write each line individually to the new file. Looking for the 'mynetworks = ' line
         for line in in_file:
             if line.find("mynetworks =")==0:
-                temp.write("mynetworks = %s\n" % ipstring)
+                if line.find("#")!=0:
+                    temp.write("mynetworks = %s\n" % ipstring)
             else:    
                 temp.write(line)
 
     temp.close()
 
-    #Do some house work
-    cmd = "mv -f /tmp/emailrelay.tmp %s" % path
-    proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
-    out,err=proc.communicate()
+    e1 = excomm("mv -f /tmp/emailrelay.tmp %s" % path)
+    if e1 == "":
+        ErrorHandler("No error during overwrite of temp file to %s" % path)
+    else:
+        ErrorHandler(e1)
     #print out to error log
-    cmd = "rm -rf /tmp/emailrealy.tmp"
-    proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
-    out,err=proc.communicate()
+    e2 = excomm("rm -rf /tmp/emailrealy.tmp")
     #print out to error log
-
+    if e2 == "":
+        ErrorHandler("No error doing removal of /tmp/emailrealy.tmp")
+    else:
+        ErrorHandler(e2)
     #for IP in IPGrab(domain):
      #   print(IP + "/32")
+def ErrorHandler(err):
+    ef = open("/var/log/EmailRelayUpdate.log", "a")
+    #error = datetime.datetime + " -- " + err
+    ef.write(time.strftime("%m/%d/%Y:%H:%M:%S") + " -- " + err + "\n")
+    ef.close()
 
 
 FileEditor()
-#IPGrab(domain)
-#IPGrab2(domain)
