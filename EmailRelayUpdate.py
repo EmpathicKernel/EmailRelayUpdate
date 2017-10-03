@@ -7,7 +7,7 @@ import re
 import time
 
 #Dyn Domain -- will change this to find the domain via some method that doesn't get overwrote via Git
-domain = "'remote.imaqeo.c'"
+domain = "'remote.imaqeo.com'"
 path = "/etc/postfix/main.cf"
 
 
@@ -29,8 +29,19 @@ def IPGrab(dom):
 
 def FileEditor():
     ipstring = ""
-    for IP in IPGrab(domain):
-        ipstring += IP + "/32,"
+    ips=IPGrab(domain)
+    if len(ips) == 1:
+        ipstring += ips[0] + "/32"
+    else:
+        c = 1
+        for IP in ips:
+            if c < len(ips):
+                ipstring += IP + "/32,"
+                c += 1
+            else:
+                ipstring += IP + "/32"
+                c += 1
+        
     ErrorHandler("New IP string is %s" % ipstring)
     #Let's create the temp file
     temp = open("/tmp/emailrelay.tmp", "a")
