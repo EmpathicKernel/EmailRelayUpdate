@@ -97,6 +97,8 @@ def ErrorHandler(err):
 #INPUT: NONE
 #OUTPUT: NONE
 def SetConfig():
+    global domain
+    global path
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     settings = os.path.join(__location__, 'settings.config')
     with open (settings, 'rt') as config:
