@@ -97,7 +97,8 @@ def ErrorHandler(err):
 #INPUT: NONE
 #OUTPUT: NONE
 def SetConfig():
-    settings = os.path.join(os.path.dirname(__file__), "settings.config")
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    settings = os.path.join(__location__, 'settings.config')
     with open (settings, 'rt') as config:
         ErrorHandler("Opening %s" % settings)
         for line in config:
