@@ -99,6 +99,7 @@ def ErrorHandler(err):
 def SetConfig():
     settings = os.path.join(os.path.dirname(__file__), "settings.config")
     with open (settings, 'rt') as config:
+        ErrorHandler("Opening %s" % settings)
         for line in config:
             if line.find("#")!=0:
                 if line.find("DOMAIN:")==0:
