@@ -1,4 +1,5 @@
 #This script will find the new IPs of domains to update the PostFix relay setting with
+import os.path
 import subprocess
 import shlex
 import re
@@ -96,7 +97,8 @@ def ErrorHandler(err):
 #INPUT: NONE
 #OUTPUT: NONE
 def SetConfig():
-    with open ("%s/settings.config" % os.path.dirname(__file__), 'rt') as config:
+    settings = os.path.join(os.path.dirname(__file__), "settings.config")
+    with open (settings, 'rt') as config:
         for line in config:
             if line.find("#")!=0:
                 if line.find("DOMAIN:")==0:
