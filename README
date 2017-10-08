@@ -1,0 +1,12 @@
+Easy setup:
+
+yum -y install git python
+cd /root
+git clone https://github.com/EmpathicKernel/EmailRelayUpdate.git
+mv EmailRelayUpdate/TrustIPUpdate.sh /etc/cron.hourly/TrustIPUpdate.sh
+chmod +x /etc/cron.hourly/TrustIPUpdate.sh
+
+Then edit /root/EmailRelayUpdate/settings.config with the correct domain name
+
+
+This script is used for updating the trusted networks for PostFix when you are using a dynamic domain name
